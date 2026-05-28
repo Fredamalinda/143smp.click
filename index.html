@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>143 SMP – Minecraft Server</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --cyan: #00e5ff;
+      --gold: #ffd700;
+      --purple: #a855f7;
+      --dark: #080c14;
+      --card: #0e1520;
+      --border: rgba(0,229,255,0.15);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--dark);
+      color: #e2e8f0;
+      font-family: 'Exo 2', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── STARFIELD ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 55%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 15%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40% 40%, rgba(0,229,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 65% 25%, rgba(168,85,247,0.3) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      z-index: 1;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0; right: 0;
+      height: 200px;
+      background: linear-gradient(to bottom, transparent, var(--dark));
+      pointer-events: none;
+    }
+
+    .glow-ring {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin-bottom: 2rem;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .glow-ring::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      background: conic-gradient(var(--cyan), var(--purple), var(--cyan));
+      animation: spin 4s linear infinite;
+      filter: blur(4px);
+      opacity: 0.8;
+    }
+
+    .glow-ring img {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      z-index: 1;
+    }
+
+    .glow-ring .logo-placeholder {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0e1520, #1a2540);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 2rem;
+      color: var(--cyan);
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .hero h1 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(1.8rem, 6vw, 3.5rem);
+      line-height: 1.3;
+      background: linear-gradient(135deg, var(--cyan) 0%, #fff 50%, var(--gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    .hero .tagline {
+      font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+      font-weight: 300;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin: 1.5rem 0 2.5rem;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .badge {
+      padding: 0.35rem 1rem;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .badge-cyan  { background: rgba(0,229,255,0.12); border: 1px solid var(--cyan); color: var(--cyan); }
+    .badge-gold  { background: rgba(255,215,0,0.12); border: 1px solid var(--gold); color: var(--gold); }
+    .badge-purple{ background: rgba(168,85,247,0.12); border: 1px solid var(--purple); color: var(--purple); }
+    .badge-green { background: rgba(34,197,94,0.12); border: 1px solid #22c55e; color: #22c55e; }
+
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      border-radius: 8px;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn:hover { transform: translateY(-3px); }
+
+    .btn-primary {
+      background: var(--cyan);
+      color: var(--dark);
+      box-shadow: 0 0 20px rgba(0,229,255,0.4);
+    }
+    .btn-primary:hover { box-shadow: 0 0 35px rgba(0,229,255,0.6); }
+
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid var(--gold);
+      color: var(--gold);
+      box-shadow: 0 0 15px rgba(255,215,0,0.2);
+    }
+    .btn-secondary:hover { box-shadow: 0 0 30px rgba(255,215,0,0.4); }
+
+    /* IP COPY BOX */
+    .ip-box {
+      margin-top: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+
+    .ip-label {
+      padding: 0.75rem 1rem;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--cyan);
+      border-right: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .ip-value {
+      padding: 0.75rem 1.25rem;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.75rem;
+      color: #fff;
+      flex: 1;
+    }
+
+    .ip-copy {
+      padding: 0.75rem 1rem;
+      background: rgba(0,229,255,0.1);
+      color: var(--cyan);
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background 0.2s;
+      border-left: 1px solid var(--border);
+    }
+    .ip-copy:hover { background: rgba(0,229,255,0.2); }
+
+    /* ── FEATURES ── */
+    .section {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 5rem 2rem;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 0.75rem;
+    }
+
+    .section-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(1rem, 3vw, 1.6rem);
+      line-height: 1.5;
+      color: #fff;
+      margin-bottom: 3rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem 1.5rem;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent, var(--cyan)), transparent);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--accent, var(--cyan));
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .feature-card h3 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.7rem;
+      color: var(--accent, var(--cyan));
+      margin-bottom: 0.75rem;
+      line-height: 1.6;
+    }
+
+    .feature-card p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.7;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      position: relative;
+      z-index: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 0 2rem;
+    }
+
+    /* ── CTA BANNER ── */
+    .cta-banner {
+      position: relative;
+      z-index: 1;
+      background: linear-gradient(135deg, rgba(0,229,255,0.06), rgba(168,85,247,0.06));
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 5rem 2rem;
+      text-align: center;
+    }
+
+    .cta-banner h2 {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(1rem, 3vw, 1.8rem);
+      line-height: 1.6;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+
+    .cta-banner p {
+      color: rgba(255,255,255,0.55);
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 3rem 2rem;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    footer .footer-logo {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1rem;
+      color: var(--cyan);
+      margin-bottom: 1rem;
+    }
+
+    footer .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    footer .footer-links a {
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    footer .footer-links a:hover { color: var(--cyan); }
+
+    .disclaimer {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.3);
+      line-height: 1.8;
+    }
+
+    .disclaimer strong {
+      color: rgba(255,255,255,0.5);
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .ip-value { font-size: 0.6rem; }
+      .hero-buttons { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="glow-ring">
+    <div class="logo-placeholder">143</div>
+  </div>
+
+  <p class="tagline">Java &amp; Bedrock Compatible</p>
+  <h1>143 SMP</h1>
+
+  <div class="badges">
+    <span class="badge badge-cyan">Survival</span>
+    <span class="badge badge-gold">PvP Arena</span>
+    <span class="badge badge-green">Economy</span>
+    <span class="badge badge-purple">Land Claiming</span>
+  </div>
+
+  <div class="hero-buttons">
+    <a href="https://discord.gg/YK6NkQhU9x" class="btn btn-primary" target="_blank">
+      Join Discord
+    </a>
+    <a href="mailto:143smp.click@gmail.com" class="btn btn-secondary">
+      Contact Us
+    </a>
+  </div>
+
+  <div class="ip-box">
+    <span class="ip-label">Server IP</span>
+    <span class="ip-value" id="ip-text">143smp.click</span>
+    <button class="ip-copy" onclick="copyIP()" id="copy-btn">Copy</button>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section class="section">
+  <p class="section-label">What We Offer</p>
+  <h2 class="section-title">Everything you need.<br/>Nothing you don't.</h2>
+
+  <div class="features-grid">
+    <div class="feature-card" style="--accent: #00e5ff;">
+      <span class="feature-icon">⛏️</span>
+      <h3>Survival Gameplay</h3>
+      <p>Classic survival with land claiming to protect everything you build. Your base, your rules.</p>
+    </div>
+    <div class="feature-card" style="--accent: #ef4444;">
+      <span class="feature-icon">⚔️</span>
+      <h3>GalaxyPvP Arena</h3>
+      <p>Dedicated PvP arena with fair, opt-in combat. Fight on your terms — no surprise attacks.</p>
+    </div>
+    <div class="feature-card" style="--accent: #22c55e;">
+      <span class="feature-icon">💰</span>
+      <h3>Player Economy</h3>
+      <p>A fully player-driven economy. Set up shops, trade resources, and build your wealth.</p>
+    </div>
+    <div class="feature-card" style="--accent: #a855f7;">
+      <span class="feature-icon">🌐</span>
+      <h3>Java + Bedrock</h3>
+      <p>Play on any platform. PC, console, or mobile — everyone is welcome on 143 SMP.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CTA -->
+<div class="cta-banner">
+  <h2>Ready to join?</h2>
+  <p>Connect with the community on Discord and start playing today.</p>
+  <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+    <a href="https://discord.gg/YK6NkQhU9x" class="btn btn-primary" target="_blank">Join the Discord</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">143 SMP</div>
+  <div class="footer-links">
+    <a href="https://discord.gg/YK6NkQhU9x" target="_blank">Discord</a>
+    <a href="mailto:143smp.click@gmail.com">Contact</a>
+  </div>
+  <div class="disclaimer">
+    <strong>NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</strong>
+    143 SMP is owned and operated by Michael Hendricks. For questions about purchases or server inquiries, contact us at 143smp.click@gmail.com
+  </div>
+</footer>
+
+<script>
+  function copyIP() {
+    navigator.clipboard.writeText('143smp.click').then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied!';
+      btn.style.color = '#22c55e';
+      setTimeout(() => { btn.textContent = 'Copy'; btn.style.color = ''; }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
